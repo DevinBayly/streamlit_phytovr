@@ -1,100 +1,76 @@
 import streamlit as st
 from PIL import Image
 import random
+import os
 import pandas as  pd 
-
-st.set_page_config(
-    layout="wide",
-    page_title="""
-Demo data vis card
-"""
-)
-st.header("""
-Demo data vis card
-""")
+import seaborn
+print(os.getcwd())
+st.write("ID of plant")
+id= st.text_input("")
+df = pd.read_csv("s10_flir_rgb_clustering_v4.csv")
+df["fahrenheit"] = (df["roi_temp"] - 273.15) * 9/5 + 32
+df.sort_values(by=["date"],inplace=True)
+filtered = df[df["index"] == int(id)]
+st.write(df)
+st.write("result")
+st.write(filtered)
 
 import numpy as np
-def make_line_chart(col):
-    with col:
-        randdata = np.random.random((20,2))
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+def generate_ridge_plot(df):
+    sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
 
-        df = pd.DataFrame(data = randdata,columns=["x","y"])
+    # Create the data
+    rs = np.random.RandomState(1979)
+    x = df["fahrenheit"]
+    g = df["date"]
+    df = pd.DataFrame(dict(fahrenheit=x, g=g))
+    st.write(df)
+    # df["x"] += m
 
-        st.line_chart(df)
-def make_map(col):
-    with col:
-        map_data = pd.DataFrame(
-            np.random.randn(1000, 2) / [50, 50] + [37.76, -122.4],
-            columns=['lat', 'lon'])
+    # Initialize the FacetGrid object
+    pal = sns.cubehelix_palette(10, rot=-.25, light=.7)
+    g = sns.FacetGrid(df, row="g", hue="g", aspect=15, height=.5, palette=pal)
 
-        st.map(map_data)
-    
-def area_chart(col):
-    with col:
-        chart_data = pd.DataFrame(
-            np.random.randn(20, 3),
-            columns=['a', 'b', 'c'])
+    # Draw the densities in a few steps
+    g.map(sns.kdeplot, "fahrenheit",
+        bw_adjust=.5, clip_on=False,
+        fill=True, alpha=1, linewidth=1.5)
+    g.map(sns.kdeplot, "fahrenheit", clip_on=False, color="w", lw=2, bw_adjust=.5)
 
-        st.area_chart(chart_data)
-
-def bar_chart(col):
-    with col:
-        chart_data = pd.DataFrame(
-            np.random.randn(20, 3),
-            columns=["a", "b", "c"])
-
-        st.bar_chart(chart_data)
+    # passing color=None to refline() uses the hue mapping
+    g.refline(y=0, linewidth=2, linestyle="-", color=None, clip_on=False)
 
 
-def make_image(col):
-    with col:
-        image = Image.open('./test.png')
-
-        st.image(image, caption='density plot')
-# create three columns
-kpi1, kpi2, kpi3 = st.columns(3)
-firstrand= np.random.random(20)
-plantsDisplayed= np.random.random()*2000
-other= np.random.random()*200
-# fill in those three columns with respective metrics or KPIs
-kpi1.metric(
-    label="Carbon Dioxide (ppm)",
-    value=np.mean(firstrand),
-    delta=np.mean(firstrand) - 10,
-)
-
-kpi2.metric(
-    label="plants Displayed",
-    value=int(plantsDisplayed),
-)
+    # # Define and use a simple function to label the plot in axes coordinates
+    def label(x, color, label):
+        ax = plt.gca()
+        ax.text(0, .2, label, fontweight="bold", color=color,
+                ha="left", va="center", transform=ax.transAxes)
 
 
-kpi3.metric(
-    label="Other research metrics",
-    value=f"{round(other,2)} ",
-)
-# left_column, right_column = st.columns(2)
-# # You can use a column just like st.sidebar:
-# left_column.button('Press me!')
+    g.map(label, "fahrenheit")
 
-# # Or even better, call Streamlit functions inside a "with" block:
-# with right_column:
-#     chosen = st.radio(
-#         'Sorting hat',
-#         ("Gryffindor", "Ravenclaw", "Hufflepuff", "Slytherin"))
-#     st.write(f"You are in {chosen} house!")
+    # Set the subplots to overlap
+    g.figure.subplots_adjust(hspace=-.25)
 
-funcs =[
-    make_line_chart,
-    make_map,
-    area_chart,
-    bar_chart,
-    make_image
-]
-col1,col2 = st.columns(2)
-cols = [col1,col2]
-for i in range(10):
-    func = random.choice(funcs)
-    col = cols[i%2]
-    func(col)
+    # Remove axes details that don't play well with overlap
+    g.set_titles("")
+    g.set(yticks=[], ylabel="")
+    g.despine(bottom=True, left=True)
+    st.pyplot(g)
 
+# def make_temp_line(df,filtered):
+#     ## just try to make a lineplot after with the filtered data in a new way
+#     f, ax = plt.subplots()
+#     sns.lineplot(df,x="date",y="fahrenheit",hue="genotype")
+#     sns.lineplot(filtered,x="date",y="fahrenheit",hue="red")
+#     st.pyplot(f)
+
+# make_temp_line(df,filtered)
+
+
+
+generate_ridge_plot(df)
