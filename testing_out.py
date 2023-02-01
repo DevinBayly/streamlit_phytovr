@@ -27,7 +27,6 @@ def generate_ridge_plot(df):
     x = df["fahrenheit"]
     g = df["date"]
     df = pd.DataFrame(dict(fahrenheit=x, g=g))
-    st.write(df)
     # df["x"] += m
 
     # Initialize the FacetGrid object
@@ -41,14 +40,21 @@ def generate_ridge_plot(df):
     g.map(sns.kdeplot, "fahrenheit", clip_on=False, color="w", lw=2, bw_adjust=.5)
 
     # passing color=None to refline() uses the hue mapping
+
     g.refline(y=0, linewidth=2, linestyle="-", color=None, clip_on=False)
+    # Sarah's idea is to go over axes and provide a refline
 
-
+    subplot_height = g.figure.get_figheight()
     # # Define and use a simple function to label the plot in axes coordinates
     def label(x, color, label):
+        print(subplot_height)
         ax = plt.gca()
         ax.text(0, .2, label, fontweight="bold", color=color,
                 ha="left", va="center", transform=ax.transAxes)
+        # ax.
+        randvar = np.random.random()
+        plt.axvline(x=randvar*25+50,ymin =0 ,ymax =.75  ,color = "red")
+
 
 
     g.map(label, "fahrenheit")
@@ -62,15 +68,17 @@ def generate_ridge_plot(df):
     g.despine(bottom=True, left=True)
     st.pyplot(g)
 
-# def make_temp_line(df,filtered):
-#     ## just try to make a lineplot after with the filtered data in a new way
-#     f, ax = plt.subplots()
-#     sns.lineplot(df,x="date",y="fahrenheit",hue="genotype")
-#     sns.lineplot(filtered,x="date",y="fahrenheit",hue="red")
-#     st.pyplot(f)
+def make_temp_line(df,filtered):
+    ## just try to make a lineplot after with the filtered data in a new way
+    f, ax = plt.subplots()
+    # this causes tons and tons of slow downs because the page draws a giant legend
+    # sns.scatterplot(df,x="date",y="fahrenheit",hue="genotype")
+    # plt.hist2d(df["date"], df["fahrenheit"], bins=(300, 30), cmap=plt.cm.jet)
+    sns.lineplot(filtered,x="date",y="fahrenheit")
+    st.pyplot(f)
 
-# make_temp_line(df,filtered)
+make_temp_line(df,filtered)
 
 
-
+st.write("Plant Canopy Temp over time, selected plant shown in Red")
 generate_ridge_plot(df)
