@@ -5,21 +5,22 @@ import os
 import pandas as  pd 
 import seaborn
 print(os.getcwd())
-st.write("ID of plant")
+# st.write("ID of plant")
 id= st.text_input("")
 df = pd.read_csv("s10_flir_rgb_clustering_v4.csv")
 df["fahrenheit"] = (df["roi_temp"] - 273.15) * 9/5 + 32
 df.sort_values(by=["date"],inplace=True)
 filtered = df[df["index"] == int(id)]
-st.write(df)
-st.write("result")
-st.write(filtered)
+print(df["date"].to_numpy() == "2020-02-16")
+# st.write(df)
+# st.write("result")
+# st.write(filtered)
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-def generate_ridge_plot(df):
+def generate_ridge_plot(df,filtered):
     sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
 
     # Create the data
@@ -47,13 +48,17 @@ def generate_ridge_plot(df):
     subplot_height = g.figure.get_figheight()
     # # Define and use a simple function to label the plot in axes coordinates
     def label(x, color, label):
-        print(subplot_height)
+        print("label is",label,"date is",filtered["date"].to_numpy())
         ax = plt.gca()
         ax.text(0, .2, label, fontweight="bold", color=color,
                 ha="left", va="center", transform=ax.transAxes)
-        # ax.
-        randvar = np.random.random()
-        plt.axvline(x=randvar*25+50,ymin =0 ,ymax =.75  ,color = "red")
+        # add a vertical line for the plant data here
+        ind = filtered["date"].to_numpy() == label
+        ind = np.where(ind ==True)
+        print(ind)
+        val = filtered.iloc[ind[0][0]]["fahrenheit"]
+
+        plt.axvline(x=val,ymin =0 ,ymax =.75  ,color = "red")
 
 
 
@@ -77,8 +82,9 @@ def make_temp_line(df,filtered):
     sns.lineplot(filtered,x="date",y="fahrenheit")
     st.pyplot(f)
 
-make_temp_line(df,filtered)
+# make_temp_line(df,filtered)
 
 
-st.write("Plant Canopy Temp over time, selected plant shown in Red")
-generate_ridge_plot(df)
+st.write("## Selected Plant Canopy Temp over time")
+generate_ridge_plot(df,filtered)
+st.write("done")
