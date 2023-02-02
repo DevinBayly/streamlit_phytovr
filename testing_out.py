@@ -1,3 +1,7 @@
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 import streamlit as st
 from PIL import Image
 import random
@@ -6,20 +10,22 @@ import pandas as  pd
 import seaborn
 print(os.getcwd())
 # st.write("ID of plant")
-id= st.text_input("")
+plant_name= st.text_input("")
+print("given name",plant_name)
 df = pd.read_csv("s10_flir_rgb_clustering_v4.csv")
+print("filtering")
+print(df["plant_name"].str.contains(plant_name))
 df["fahrenheit"] = (df["roi_temp"] - 273.15) * 9/5 + 32
 df.sort_values(by=["date"],inplace=True)
-filtered = df[df["index"] == int(id)]
-print(df["date"].to_numpy() == "2020-02-16")
+filtered = df[df["plant_name"].str.contains(plant_name).fillna(False)]
+# filtered = df[df["plant_name"].str.contains(plant_name)]
+# print()
+# print(filtered)
+# print()
 # st.write(df)
 # st.write("result")
 # st.write(filtered)
 
-import numpy as np
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 def generate_ridge_plot(df,filtered):
     sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
 
@@ -55,10 +61,11 @@ def generate_ridge_plot(df,filtered):
         # add a vertical line for the plant data here
         ind = filtered["date"].to_numpy() == label
         ind = np.where(ind ==True)
-        print(ind)
-        val = filtered.iloc[ind[0][0]]["fahrenheit"]
+        if (len(ind[0])> 0):
+            print(ind)
+            val = filtered.iloc[ind[0][0]]["fahrenheit"]
 
-        plt.axvline(x=val,ymin =0 ,ymax =.75  ,color = "red")
+            plt.axvline(x=val,ymin =0 ,ymax =.75  ,color = "red")
 
 
 
